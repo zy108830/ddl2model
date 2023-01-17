@@ -15,16 +15,20 @@ function castDBType(type){
     return "string"
 }
 
-var defaultDDL="CREATE TABLE `logo` (\n" +
-    "  `id` int(11) NOT NULL AUTO_INCREMENT,\n" +
-    "  `name` varchar(255) CHARACTER SET utf8mb4 DEFAULT '' COMMENT '名称',\n" +
-    "  `default` tinyint(3) DEFAULT '0' COMMENT '是否为默认图标',\n" +
-    "  `needcoin` tinyint(3) DEFAULT '0' COMMENT '是否收费',\n" +
-    "  `index` tinyint(3) DEFAULT '0' COMMENT '排序',\n" +
-    "  `created_at` int(11) DEFAULT '0',\n" +
-    "  `updated_at` int(11) DEFAULT '0',\n" +
-    "  PRIMARY KEY (`id`) USING BTREE\n" +
-    ") ENGINE=InnoDB AUTO_INCREMENT=16 DEFAULT CHARSET=utf8 ROW_FORMAT=COMPACT COMMENT='自定义Logo';"
+var defaultDDL="CREATE TABLE `slow_log` (\n" +
+    "  `start_time` timestamp(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6),\n" +
+    "  `user_host` mediumtext NOT NULL,\n" +
+    "  `query_time` time(6) NOT NULL,\n" +
+    "  `lock_time` time(6) NOT NULL,\n" +
+    "  `rows_sent` int(11) NOT NULL,\n" +
+    "  `rows_examined` int(11) NOT NULL,\n" +
+    "  `db` varchar(512) NOT NULL,\n" +
+    "  `last_insert_id` int(11) NOT NULL,\n" +
+    "  `insert_id` int(11) NOT NULL,\n" +
+    "  `server_id` int(10) unsigned NOT NULL,\n" +
+    "  `sql_text` mediumtext NOT NULL,\n" +
+    "  `thread_id` bigint(21) unsigned NOT NULL\n" +
+    ") ENGINE=CSV DEFAULT CHARSET=utf8 COMMENT='Slow log';"
 
 document.getElementById('run').addEventListener('click',function (){
     let ddl=document.getElementById('coding').value || defaultDDL;
@@ -32,7 +36,11 @@ document.getElementById('run').addEventListener('click',function (){
     let tableComment="";
     let tableName=/TABLE `(.*)`/.exec(ddl)[1]
     let modelName=getModelName(tableName)
-    let primaryKey=/PRIMARY KEY \(`(.*)`\)/.exec(ddl)[1]
+    let primaryKey=""
+    let primaryKeyMatch=/PRIMARY KEY \(`(.*)`\)/.exec(ddl)
+    if(primaryKeyMatch){
+        primaryKey=primaryKeyMatch[1]
+    }
     let fillable=[]
     let casts=[]
 
@@ -56,7 +64,7 @@ document.getElementById('run').addEventListener('click',function (){
                     dateFormat="U";
                 }
             }else {
-                let items=/`(.*)`\s(.*)\(/.exec(line)
+                let items=/`(.*)`\s(.*)(\s|\()/.exec(line)
                 let field_name=items[1]
                 // 主键不需要处理
                 if(field_name==primaryKey){
@@ -67,19 +75,24 @@ document.getElementById('run').addEventListener('click',function (){
                 if(field_type!='string'){
                     casts.push(`"${field_name}"=>"${field_type}",`)
                 }
-                // fillable
-                let field_comment=/COMMENT\s'(.*)'/.exec(line)
-                try {
-                    let field_default_value=/DEFAULT\s(.*?)(\s|\,)/.exec(line)[1] || `""`;
-                    if(field_comment){
-                        fillable.push(`'${field_name}', // ${field_comment[1]}；默认值 ${field_default_value}`)
-                    }else {
-                        fillable.push(`'${field_name}', // 默认值 ${field_default_value} `)
-                    }
-                }catch (e){
-                    console.log(line)
+                /**
+                 * fillable
+                  */
+                //comment
+                let remark=""
+                let field_comment_match=/COMMENT\s'(.*)'/.exec(line)
+                if(field_comment_match){
+                    remark+=`${field_comment_match[1]};`
                 }
-
+                // default value
+                let field_default_value_match=/DEFAULT\s(.*?)(\s|\,)/.exec(line);
+                if(field_default_value_match){
+                    remark+=`default ${field_default_value_match[1]}`
+                }
+                if(remark){
+                    remark=`, // `+remark
+                }
+                fillable.push(`'${field_name}'${remark}`)
             }
         }
     }
