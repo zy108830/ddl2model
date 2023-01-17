@@ -1,0 +1,101 @@
+/* code here... */
+pre {
+    margin: 0;
+}
+
+.container {
+    display: flex;
+}
+
+.title{
+    margin: 20px 0;
+    padding-left: 16px;
+    font-size: 22px;
+}
+
+.side {
+    border: 1px solid #ccc;
+    flex: 1 0 0;
+    margin: 16px;
+    border-radius: 5px;
+    position: relative;
+}
+
+.side-left {
+    height: 700px;
+}
+
+.header {
+    display: flex;
+    margin-bottom: 0;
+    background-color: #96b97d;
+    border-bottom: 1px solid rgba(0, 0, 0, .125);
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 10px;
+}
+
+.header .btn {
+    flex: 0 0 auto;
+    width: 100px;
+    padding: 6px 12px;
+    text-align: center;
+    border: none;
+    color: white;
+}
+
+.button-notice {
+    width: 64px;
+    height: 24px;
+    color: #6c757d;
+}
+
+.btn-run {
+    background-color: #198754;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.btn-run:hover {
+    background-color: #157347;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.coding {
+    width: 100%;
+    height: 100%;
+    padding: 20px;
+    box-sizing: border-box;
+    resize: none;
+    height: 645px;
+    border: none;
+}
+
+.language-php {
+
+}
+
+#toast {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    background-color: #157347;
+    opacity: 0;
+    color: #fff;
+    padding: 8px;
+    border-radius: 4px;
+}
+
+@keyframes spin1 {
+    100% {
+        opacity:1
+    }
+}
+
+@keyframes spin2 {
+    100% {
+        transform: rotate(-360deg);
+    }
+}
